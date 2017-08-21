@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version    = 2017080100;   // The current module version (Date: YYYYMMDDXX)
-$plugin->requires   = 20170331;   // Requires this Moodle version
+$plugin->requires   = 2017042100;   // Requires this Moodle version
 $plugin->component  = 'report_mergefiles'; // Full name of the plugin (used for diagnostics)
 $plugin->maturity   = MATURITY_ALPHA;
-$plugin->release    = 'v3.3-r2.1';    // This is our first revision for Moodle 3.3 branch.
+$plugin->release    = 'v3.3-r2';    // This is our first revision for Moodle 3.3 branch.
