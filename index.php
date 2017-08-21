@@ -24,17 +24,32 @@
  * @author      Kashmira Nagwekar
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require('../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->dirroot.'/course/lib.php');
 require_once($CFG->dirroot . '/report/mergefiles/performmerge_form.php');
 
 if (empty($id)) {
     $id = required_param('courseid', PARAM_INT);
+//     require_login();
+//     $context = context_system::instance();
+//     $coursename = format_string($SITE->fullname, true, array('context' => $context));
+// } else {
+    $course = get_course($id);
+    require_login($course);
+    $context = context_course::instance($course->id);
+    $coursename = format_string($course->fullname, true, array('context' => $context));
 }
-$course = $DB->get_record('course', array ('id' => $id), '*', MUST_EXIST);
+require_capability('report/mergefiles:view', $context);
 
-require_login($course);
-$context = context_course::instance($course->id);
-$PAGE->set_pagelayout('incourse');
+// $course = $DB->get_record('course', array ('id' => $id), '*', MUST_EXIST);
+// require_login($course);
+// $context = context_course::instance($course->id);
+$url = new moodle_url("/report/mergefiles/index.php", array ('courseid' => $course->id));
+
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('report');
 
 $strlastmodified    = get_string('lastmodified');
 $strlocation        = get_string('location');
@@ -44,17 +59,21 @@ $strresources       = get_string('resources');
 $strsectionname     = get_string('sectionname', 'format_' . $course->format);
 $strsize            = get_string('size');
 $strsizeb           = get_string('sizeb');
-
 $heading            = get_string('heading', 'report_mergefiles');
 $note               = get_string('note', 'report_mergefiles');
 $pluginname         = get_string('pluginname', 'report_mergefiles');
 
-$PAGE->set_url('/report/mergefiles/index.php', array ('id' => $course->id));
+if (empty($id)) {
+    //     $id = required_param('courseid', PARAM_INT);
+    admin_externalpage_setup('reportmergefiles', '', null, '', array('pagelayout' => 'report'));
+}
+
+$PAGE->set_url($url);
+// $PAGE->set_url('/report/mergefiles/index.php', array ('id' => $course->id));
+$PAGE->set_context($context);
 $PAGE->set_title($course->shortname . ' | ' . $pluginname);
 $PAGE->set_heading($course->fullname . ' | ' . $pluginname);
-$PAGE->navbar->add($pluginname);
-
-// require_capability('report/mergefiles:view', $context);
+// $PAGE->navbar->add($pluginname);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($heading);
@@ -121,8 +140,8 @@ if ($usesections) {
             $strsectionname,
             $strname,
             $strintro,
-            $strsize . ' (' . $strsizeb . ')',
-            "Location (moodledata/filedir/..)");
+            $strsize . ' (' . $strsizeb . ')');
+            // "Location (moodledata/filedir/..)"
     $table->align = array (
             'center',
             'left',
@@ -133,8 +152,8 @@ if ($usesections) {
             $strlastmodified,
             $strname,
             $strintro,
-            $strsize . ' (' . $strsizeb . ')',
-            $strlocation);
+            $strsize . ' (' . $strsizeb . ')');
+            // $strlocation
     $table->align = array (
             'left',
             'left',
@@ -194,8 +213,8 @@ foreach($cms as $cm) {
             $printsection,
             "<a $class $extra href=\"" . $url . "\">" . $icon . $cm->get_formatted_name() . "</a>",
             $file->get_filename(),
-            $file->get_filesize(),
-            $loc[$p]);
+            $file->get_filesize());
+            // $loc[$p]
     $p++;
 }
 
