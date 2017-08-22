@@ -36,7 +36,6 @@ if (empty($id)) {
 //     $context = context_system::instance();
 //     $coursename = format_string($SITE->fullname, true, array('context' => $context));
 // } else {
-
     $course = get_course($id);
     require_login($course);
     $context = context_course::instance($course->id);
