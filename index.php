@@ -27,15 +27,13 @@
 
 require('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->dirroot.'/course/lib.php');
-require_once($CFG->dirroot . '/report/mergefiles/performmerge_form.php');
+require_once($CFG->dirroot.'/backup/cc/cc_lib/gral_lib/pathutils.php'); // For using function rmdirr(string $dirname).
+require_once($CFG->dirroot.'/report/mergefiles/performmerge_form.php');
 
 if (empty($id)) {
     $id = required_param('courseid', PARAM_INT);
-//     require_login();
-//     $context = context_system::instance();
-//     $coursename = format_string($SITE->fullname, true, array('context' => $context));
-// } else {
     $course = get_course($id);
     require_login($course);
     $context = context_course::instance($course->id);
@@ -43,9 +41,6 @@ if (empty($id)) {
 }
 require_capability('report/mergefiles:view', $context);
 
-// $course = $DB->get_record('course', array ('id' => $id), '*', MUST_EXIST);
-// require_login($course);
-// $context = context_course::instance($course->id);
 $url = new moodle_url("/report/mergefiles/index.php", array ('courseid' => $course->id));
 
 $PAGE->set_url($url);
@@ -69,16 +64,13 @@ if (empty($id)) {
 }
 
 $PAGE->set_url($url);
-// $PAGE->set_url('/report/mergefiles/index.php', array ('id' => $course->id));
 $PAGE->set_context($context);
 $PAGE->set_title($course->shortname . ' | ' . $pluginname);
 $PAGE->set_heading($course->fullname . ' | ' . $pluginname);
-// $PAGE->navbar->add($pluginname);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($heading);
-echo $note;
-echo "<br><br>";
+echo $note . '<br><br>';
 
 // Source code from course/resources.php...used for getting all the pdf files in the course in order to merge them.
 
@@ -162,6 +154,13 @@ if ($usesections) {
 }
 
 $fs = get_file_storage();
+
+$tempdir = $CFG->tempdir . '/mergefiles'; // Create temporary storage location for files.
+if (!file_exists($tempdir)) {
+    $mkdir = mkdir($tempdir, 0777, true);
+}
+$tempdirpath = $tempdir . '/';
+
 $currentsection = '';
 foreach($cms as $cm) {
     if (!isset($resources[$cm->modname][$cm->instance])) {
@@ -203,18 +202,16 @@ foreach($cms as $cm) {
     // ---------------------------------------------------------------------------
 
     $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(), $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $file->get_filename());
-    $contenthash = $file->get_contenthash();
 
-    static $p = 0;
-    $loc[$p] = substr($contenthash, 0, 2) . '/' . substr($contenthash, 2, 2) . '/' . $contenthash;
-    $arr[$p] = $CFG->dataroot . "/filedir/" . $loc[$p];
+    static $p = 1;
+    $file->copy_content_to($tempdirpath . $p . '.pdf');
+    $arr[$p] = $tempdirpath . $p . '.pdf';
 
     $table->data[] = array (
             $printsection,
             "<a $class $extra href=\"" . $url . "\">" . $icon . $cm->get_formatted_name() . "</a>",
             $file->get_filename(),
             $file->get_filesize());
-            // $loc[$p]
     $p++;
 }
 
@@ -231,49 +228,16 @@ if ($data = $mform->get_data()) {
         // Code for merging all the course pdfs. ---------------------------------------------------
         // Merge all course pdf files and store the merged document at a temporary location.
 
-        $path = $CFG->dataroot . "/temp/filestorage"; // Create temporary storage location for merged pdf file.
-        if (!file_exists($path)) {
-            $mkdir = mkdir($path, 0777, true);
-        }
-        $datadir = $path . "/";
-
-        $mergedpdf = $datadir . uniqid('mergedfile_') . ".pdf"; // Path to the merged pdf document with unique filename.
+        $mergedpdf = $tempdirpath . uniqid('mergedfile_') . '.pdf'; // Path to the merged pdf document with unique filename.
 
         // Merge all the pdf files in the course using pdftk.
         $cmd = "pdftk ";
         // Add each pdf file to the command.
-        foreach($arr as $file) {
-            $cmd .= $file . " ";
+        foreach($arr as $pdffile) {
+            $cmd .= $pdffile . " ";
         }
         $cmd .= " output $mergedpdf";
         $result = shell_exec($cmd);
-
-        // Copy the merged pdf document from temp loc to 'moodledata/filedir/...'.
-        $mergedfileinfo = array (
-                'contextid' => $context->id,    // ID of context
-                'component' => 'mod_resource',  // usually = table name
-                'filearea'  => 'content',       // usually = table name
-                'itemid'    => 0,               // usually = ID of row in table
-                'filepath'  => '/',             // any path beginning and ending in /
-                'filename'  => uniqid('mergedfile_') . '.pdf'); // any filename
-
-        $fs->create_file_from_pathname($mergedfileinfo, $mergedpdf);
-
-        $mergedfile = $fs->get_file(
-                $mergedfileinfo['contextid'],
-                $mergedfileinfo['component'],
-                $mergedfileinfo['filearea'],
-                $mergedfileinfo['itemid'],
-                $mergedfileinfo['filepath'],
-                $mergedfileinfo['filename']);
-
-        $mergedfileurl = moodle_url::make_pluginfile_url(
-                $mergedfile->get_contextid(),
-                $mergedfile->get_component(),
-                $mergedfile->get_filearea(),
-                $mergedfile->get_itemid(),
-                $mergedfile->get_filepath(),
-                $mergedfile->get_filename());
 
         // Create a blank numbered pdf document. ----------------------------------------------------
 
@@ -302,7 +266,7 @@ if ($data = $mform->get_data()) {
 			';
 
         $tempfilename = uniqid('latexfile_');
-        $latexfilename = $datadir . $tempfilename;
+        $latexfilename = $tempdirpath . $tempfilename;
         $latexfile = $latexfilename . '.tex';
 
         $latexfileinfo = array (
@@ -327,7 +291,7 @@ if ($data = $mform->get_data()) {
 
         // Execute pdflatex with parameter.
         // Store the output blank numbered pdf document and all the intermediate files at the temp loc.
-        $result1 = shell_exec('pdflatex -aux-directory=' . $datadir . ' -output-directory=' . $datadir . ' ' . $latexfile . ' ');
+        $result1 = shell_exec('pdflatex -aux-directory=' . $tempdirpath . ' -output-directory=' . $tempdirpath . ' ' . $latexfile . ' ');
 
         // var_dump( $pdflatex );
         // Test for success.
@@ -338,10 +302,11 @@ if ($data = $mform->get_data()) {
         }
 
         // Merge the blank numbered pdf document with the merged pdf document (containing all course pdfs).
-        $stampedpdf = $datadir . uniqid('stampedfile_') . ".pdf";   // Unique filename (with entire path to the file) for the merged and stamped pdf document.
-        $result2 = shell_exec("pdftk $mergedpdf multistamp " . $latexfilename . ".pdf output $stampedpdf");
-        $stampedfilename = uniqid('stampedfile_') . '.pdf';
+        $stampedpdf = $tempdirpath . uniqid('stampedfile_') . ".pdf";   // Unique filename (with entire path to the file) for the merged and stamped pdf document.
 
+        $result2 = shell_exec("pdftk $mergedpdf multistamp " . $latexfilename . ".pdf output $stampedpdf");
+
+        $stampedfilename = uniqid('stampedfile_') . '.pdf';
         $stampedfileinfo = array (
                 'contextid' => $context->id,
                 'component' => 'mod_resource',
@@ -368,7 +333,9 @@ if ($data = $mform->get_data()) {
                 $stampedfile->get_filepath(),
                 $stampedfile->get_filename());
 
-        echo "<br> Merged PDF Document | " . "<a $class $extra href=\"" . $stampedfileurl . "\">" . $icon . "Available here!</a>";
+        rmdirr($tempdir);
+        echo get_string('mergedpdfdoc', 'report_mergefiles') . " | " . "<a $class $extra href=\"" . $stampedfileurl . "\">" . $icon . get_string('availablehere', 'report_mergefiles') . "</a>";
+
     }
 }
 

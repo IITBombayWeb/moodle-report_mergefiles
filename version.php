@@ -30,4 +30,4 @@ $plugin->version    = 2017080100;   // The current module version (Date: YYYYMMD
 $plugin->requires   = 2017033100;   // Requires this Moodle version
 $plugin->component  = 'report_mergefiles'; // Full name of the plugin (used for diagnostics)
 $plugin->maturity   = MATURITY_ALPHA;
-$plugin->release    = 'v3.3-r2';    // This is our first revision for Moodle 3.3 branch.
+$plugin->release    = 'v3.2.2+ - r2';    // This is our second revision for Moodle 3.2.2+ and above branches.

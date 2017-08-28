@@ -26,3 +26,5 @@ $string['heading'] = "Course files";
 $string['note'] = "(Note: Files in pdf format only)";
 $string['pluginname'] = 'Merge PDF Files';
 $string['mergefiles:view'] = 'View merged pdf file';
+$string['mergedpdfdoc'] = 'Merged PDF Document';
+$string['availablehere'] = 'Available here!';
