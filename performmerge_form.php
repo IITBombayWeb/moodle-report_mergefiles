@@ -20,7 +20,7 @@ require_once ($CFG->libdir . '/formslib.php');
 /**
  * Perform merge form.
  *
- * @package     report_mergefiles
+ * @package     tool_mergefiles
  * @copyright   2017 IIT Bombay
  * @author      Kashmira Nagwekar
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

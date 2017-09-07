@@ -19,7 +19,7 @@
  *
  * NOTE: page type not included because there can not be any blocks in popups
  *
- * @package    report_mergefiles
+ * @package    tool_mergefiles
  * @copyright  2017 IIT Bombay
  * @author     Kashmira Nagwekar
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -36,10 +36,16 @@ defined('MOODLE_INTERNAL') || die;
  * @param stdClass        $course     The course to object for the report
  * @param context         $context    The context of the course
  */
-function report_mergefiles_extend_navigation_course($navigation, $course, $context) {
-    if (has_capability('report/mergefiles:view', $context)) {
-        $url = new moodle_url('/report/mergefiles/index.php', array('courseid' => $course->id));
-        $navigation->add(get_string('pluginname', 'report_mergefiles'), $url, navigation_node::TYPE_SETTING, null, null,
-                new pix_icon('i/report', ''));
+function tool_mergefiles_extend_navigation_course($navigation, $course, $context) {
+    if (has_capability('tool/mergefiles:view', $context)) {
+        $url = new moodle_url('/admin/tool/mergefiles/index.php', array('courseid' => $course->id));
+        $navigation->add(get_string('pluginname', 'tool_mergefiles'),
+                $url,
+                navigation_node::TYPE_SETTING,
+                null,
+                null,
+                new pix_icon('t/download', ''));
     }
 }
+
+// function <component>_extend_navigation_course(navigation_node $parentnode, stdClass $course, context_course $context);

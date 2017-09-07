@@ -19,7 +19,7 @@
  *
  * This files lists capabilites related to report_mergefiles
  *
- * @package    report_mergefiles
+ * @package    tool_mergefiles
  * @copyright  2017 IIT Bombay
  * @author     Kashmira Nagwekar
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
 
-    'report/mergefiles:view' => array(
+    'tool/mergefiles:view' => array(
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
