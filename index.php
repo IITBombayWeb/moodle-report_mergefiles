@@ -19,20 +19,18 @@
  *
  * This file generates a merged pdf document of all the pdfs found in a particular course.
  *
- * @package     tool_mergefiles
+ * @package     report_mergefiles
  * @copyright   2017 IIT Bombay
  * @author      Kashmira Nagwekar
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__ . '/../../../config.php');
-require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->libdir . '/filelib.php');
-require_once($CFG->dirroot . '/course/lib.php');
-require_once($CFG->dirroot . '/backup/cc/cc_lib/gral_lib/pathutils.php'); // For using function rmdirr(string $dirname).
-require_once($CFG->dirroot . '/admin/tool/mergefiles/performmerge_form.php');
-
-// admin_externalpage_setup('toolmergefiles');
+require('../../config.php');
+require_once($CFG->libdir.'/adminlib.php');
+require_once($CFG->libdir.'/filelib.php');
+require_once($CFG->dirroot.'/course/lib.php');
+require_once($CFG->dirroot.'/backup/cc/cc_lib/gral_lib/pathutils.php'); // For using function rmdirr(string $dirname).
+require_once($CFG->dirroot.'/report/mergefiles/performmerge_form.php');
 
 if (empty($id)) {
     $id = required_param('courseid', PARAM_INT);
@@ -41,29 +39,28 @@ if (empty($id)) {
     $context = context_course::instance($course->id);
     $coursename = format_string($course->fullname, true, array('context' => $context));
 }
-require_capability('tool/mergefiles:view', $context);
+require_capability('report/mergefiles:view', $context);
 
-$url = new moodle_url("/admin/tool/mergefiles/index.php", array ('courseid' => $course->id));
+$url = new moodle_url("/report/mergefiles/index.php", array ('courseid' => $course->id));
 
 $PAGE->set_url($url);
-// $PAGE->set_pagelayout('standard');
-$PAGE->set_pagelayout('incourse');
+$PAGE->set_pagelayout('report');
 
 $strlastmodified    = get_string('lastmodified');
 $strlocation        = get_string('location');
 $strintro           = get_string('moduleintro');
 $strname            = get_string('name');
 $strresources       = get_string('resources');
-// $strsectionname     = get_string('sectionname', 'format_' . $course->format);
+$strsectionname     = get_string('sectionname', 'format_' . $course->format);
 $strsize            = get_string('size');
 $strsizeb           = get_string('sizeb');
-$heading            = get_string('heading', 'tool_mergefiles');
-$note               = get_string('note', 'tool_mergefiles');
-$pluginname         = get_string('pluginname', 'tool_mergefiles');
+$heading            = get_string('heading', 'report_mergefiles');
+$note               = get_string('note', 'report_mergefiles');
+$pluginname         = get_string('pluginname', 'report_mergefiles');
 
 if (empty($id)) {
     //     $id = required_param('courseid', PARAM_INT);
-    admin_externalpage_setup('toolmergefiles', '', null, '', array('pagelayout' => 'admin'));
+    admin_externalpage_setup('reportmergefiles', '', null, '', array('pagelayout' => 'report'));
 }
 
 $PAGE->set_url($url);

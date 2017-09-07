@@ -28,4 +28,3 @@ $string['pluginname'] = 'Merge PDF Files';
 $string['mergefiles:view'] = 'View merged pdf file';
 $string['mergedpdfdoc'] = 'Merged PDF Document';
 $string['availablehere'] = 'Available here!';
-$string['mergefiles'] = 'Merge PDF Files';

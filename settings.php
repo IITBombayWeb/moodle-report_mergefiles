@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capabilities
+ * Links and settings
  *
- * This files lists capabilites related to report_mergefiles
+ * This file contains links and settings used by report_mergefiles
  *
  * @package    report_mergefiles
  * @copyright  2017 IIT Bombay
@@ -25,22 +25,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$capabilities = array(
+// Just a link to course report.
+$ADMIN->add('reports', new admin_externalpage('reportmergefiles', get_string('pluginname', 'report_mergefiles'),
+        "$CFG->wwwroot/report/mergefiles/index.php", 'report/mergefiles:view'));
 
-    'report/mergefiles:view' => array(
-        'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
-//             'admin' => CAP_ALLOW,
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
-//         'clonepermissionsfrom' => 'coursereport/log:view',
-    ),
-);
-
-
+// No report settings.
+$settings = null;
